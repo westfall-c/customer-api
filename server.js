@@ -12,7 +12,16 @@ app.get("/customers", async (req, res) => {
   if (cust) {
     res.send(cust);
   } else {
-    res.status(500).send(err);
+    res.status(500).send({ error: err });
+  }
+});
+
+app.get("/reset", async (req, res) => {
+  const [msg, err] = await da.resetCustomers();
+  if (msg) {
+    res.send(msg);
+  } else {
+    res.status(500).send({ error: err });
   }
 });
 
