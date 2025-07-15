@@ -16,9 +16,12 @@ async function getCustomers() {
   try {
     if (!collection) await connect();
     const customers = await collection.find().toArray();
+
+//throw new Error("Simulated server crash");
+
     return [customers, null];
   } catch (err) {
-    console.error(err.message);
+    console.error("Error fetching customers:", err.message);
     return [null, err.message];
   }
 }
