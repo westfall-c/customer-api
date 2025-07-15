@@ -57,6 +57,28 @@ app.get("/customers/:id", async (req, res) => {
   }
 });
 
+app.put("/customers/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const updatedCustomer = req.body;
+
+  if (!updatedCustomer) {
+    res.status(400).send("Missing request body");
+    return;
+  }
+
+  // Remove _id if present to avoid MongoDB write errors
+  delete updatedCustomer._id;
+  updatedCustomer.id = id;
+
+  const [msg, err] = await da.updateCustomer(updatedCustomer);
+
+  if (msg) {
+    res.send(msg);
+  } else {
+    res.status(400).send({ error: err });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });

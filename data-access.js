@@ -75,9 +75,30 @@ async function getCustomerById(id) {
   }
 }
 
+async function updateCustomer(updatedCustomer) {
+  try {
+    if (!collection) await connect();
+
+    const filter = { id: updatedCustomer.id };
+    const update = { $set: updatedCustomer };
+
+    const result = await collection.updateOne(filter, update);
+
+    if (result.modifiedCount === 1) {
+      return ["one record updated", null];
+    } else {
+      return [null, "no record updated"];
+    }
+  } catch (err) {
+    console.error("Error updating customer:", err.message);
+    return [null, err.message];
+  }
+}
+
 module.exports = {
   getCustomers,
   resetCustomers,
   addCustomer,
-  getCustomerById
+  getCustomerById,
+  updateCustomer
 };
