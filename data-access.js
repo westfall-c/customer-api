@@ -95,10 +95,28 @@ async function updateCustomer(updatedCustomer) {
   }
 }
 
+async function deleteCustomerById(id) {
+  try {
+    if (!collection) await connect();
+
+    const result = await collection.deleteOne({ id: +id });
+
+    if (result.deletedCount === 1) {
+      return ["one record deleted", null];
+    } else {
+      return [null, "no record deleted"];
+    }
+  } catch (err) {
+    console.error("Error deleting customer:", err.message);
+    return [null, err.message];
+  }
+}
+
 module.exports = {
   getCustomers,
   resetCustomers,
   addCustomer,
   getCustomerById,
-  updateCustomer
+  updateCustomer,
+  deleteCustomerById
 };
