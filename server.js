@@ -5,6 +5,9 @@ const da = require("./data-access");
 const app = express();
 const port = 4000;
 
+const bodyParser = require("body-parser");
+app.use(bodyParser.json());
+
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/customers", async (req, res) => {
@@ -22,6 +25,24 @@ app.get("/reset", async (req, res) => {
     res.send(msg);
   } else {
     res.status(500).send({ error: err });
+  }
+});
+
+app.post("/customers", async (req, res) => {
+  const newCustomer = req.body;
+
+  if (!newCustomer) {
+    res.status(400).send("Missing request body");
+    return;
+  }
+
+  const [status, id, err] = await da.addCustomer(newCustomer);
+
+  if (status === "success") {
+    newCustomer._id = id;
+    res.status(201).send(newCustomer);
+  } else {
+    res.status(400).send({ error: err });
   }
 });
 
