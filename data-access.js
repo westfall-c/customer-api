@@ -26,4 +26,28 @@ async function getCustomers() {
   }
 }
 
-module.exports = { getCustomers };
+async function resetCustomers() {
+  try {
+    if (!collection) await connect();
+
+    const defaultCustomers = [
+      { id: 0, name: "Mary Jackson", email: "maryj@abc.com", password: "maryj" },
+      { id: 1, name: "Karen Addams", email: "karena@abc.com", password: "karena" },
+      { id: 2, name: "Scott Ramsey", email: "scottr@abc.com", password: "scottr" }
+    ];
+
+    await collection.deleteMany({});
+    await collection.insertMany(defaultCustomers);
+    const count = await collection.countDocuments();
+
+    return [`${count} records inserted`, null];
+  } catch (err) {
+    console.error("Error in resetCustomers:", err.message);
+    return [null, err.message];
+  }
+}
+
+module.exports = {
+  getCustomers,
+  resetCustomers
+};
