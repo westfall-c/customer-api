@@ -79,6 +79,17 @@ app.put("/customers/:id", async (req, res) => {
   }
 });
 
+app.delete("/customers/:id", async (req, res) => {
+  const id = req.params.id;
+  const [msg, err] = await da.deleteCustomerById(id);
+
+  if (msg) {
+    res.send(msg);
+  } else {
+    res.status(404).send({ error: err });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
