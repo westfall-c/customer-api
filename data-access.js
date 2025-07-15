@@ -112,11 +112,39 @@ async function deleteCustomerById(id) {
   }
 }
 
+async function findCustomers(queryField, queryValue) {
+  try {
+    if (!collection) await connect();
+
+    // Accept only specific fields
+    const allowedFields = ["id", "email", "password"];
+    if (!allowedFields.includes(queryField)) {
+      return [null, "name must be one of the following (id, email, password)"];
+    }
+
+    // Convert value to number if searching by id
+    const value = queryField === "id" ? +queryValue : queryValue;
+
+    const query = { [queryField]: value };
+    const results = await collection.find(query).toArray();
+
+    if (results.length === 0) {
+      return [null, "no matching customer documents found"];
+    }
+
+    return [results, null];
+  } catch (err) {
+    console.error("Error in findCustomers:", err.message);
+    return [null, err.message];
+  }
+}
+
 module.exports = {
   getCustomers,
   resetCustomers,
   addCustomer,
   getCustomerById,
   updateCustomer,
-  deleteCustomerById
+  deleteCustomerById,
+  findCustomers
 };

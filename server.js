@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const path = require("path");
 const da = require("./data-access");
@@ -6,11 +8,31 @@ const app = express();
 const port = 4000;
 
 const bodyParser = require("body-parser");
-app.use(bodyParser.json());
 
+
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/customers", async (req, res) => {
+// 🔐 Middleware to check API key
+function checkApiKey(req, res, next) {
+  const clientKey = req.headers["x-api-key"];
+  const serverKey = process.env.API_KEY;
+
+  console.log("clientKey:", clientKey);
+  console.log("serverKey:", serverKey);
+
+  if (!clientKey) {
+    return res.status(401).send("API Key is missing");
+  }
+
+  if (clientKey !== serverKey) {
+    return res.status(403).send("API Key is invalid");
+  }
+
+  next();
+}
+
+app.get("/customers", checkApiKey, async (req, res) => {
   const [cust, err] = await da.getCustomers();
   if (cust) {
     res.send(cust);
@@ -41,6 +63,29 @@ app.post("/customers", async (req, res) => {
   if (status === "success") {
     newCustomer._id = id;
     res.status(201).send(newCustomer);
+  } else {
+    res.status(400).send({ error: err });
+  }
+});
+
+app.get("/customers/find", async (req, res) => {
+  const keys = Object.keys(req.query);
+
+  // Require exactly one query string field
+  if (keys.length === 0) {
+    return res.status(400).send("query string is required");
+  }
+  if (keys.length > 1) {
+    return res.status(400).send("only one query field is allowed");
+  }
+
+  const field = keys[0];
+  const value = req.query[field];
+
+  const [results, err] = await da.findCustomers(field, value);
+
+  if (results) {
+    res.send(results);
   } else {
     res.status(400).send({ error: err });
   }
@@ -89,6 +134,7 @@ app.delete("/customers/:id", async (req, res) => {
     res.status(404).send({ error: err });
   }
 });
+
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
