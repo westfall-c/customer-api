@@ -47,7 +47,19 @@ async function resetCustomers() {
   }
 }
 
+async function addCustomer(newCustomer) {
+  try {
+    if (!collection) await connect();
+    const result = await collection.insertOne(newCustomer);
+    return ["success", result.insertedId, null];
+  } catch (err) {
+    console.error("Error adding customer:", err.message);
+    return ["fail", null, err.message];
+  }
+}
+
 module.exports = {
   getCustomers,
-  resetCustomers
+  resetCustomers,
+  addCustomer
 };
