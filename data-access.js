@@ -58,8 +58,26 @@ async function addCustomer(newCustomer) {
   }
 }
 
+async function getCustomerById(id) {
+  try {
+    if (!collection) await connect();
+
+    const customer = await collection.findOne({ id: +id }); // +id ensures numeric match
+
+    if (customer) {
+      return [customer, null];
+    } else {
+      return [null, "invalid customer number"];
+    }
+  } catch (err) {
+    console.error("Error in getCustomerById:", err.message);
+    return [null, err.message];
+  }
+}
+
 module.exports = {
   getCustomers,
   resetCustomers,
-  addCustomer
+  addCustomer,
+  getCustomerById
 };
