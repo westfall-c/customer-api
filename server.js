@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config(); 
 
 const express = require("express");
 const path = require("path");
@@ -8,7 +8,6 @@ const app = express();
 const port = 4000;
 
 const bodyParser = require("body-parser");
-
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -54,8 +53,15 @@ app.post("/customers", async (req, res) => {
   const newCustomer = req.body;
 
   if (!newCustomer) {
-    res.status(400).send("Missing request body");
-    return;
+    return res.status(400).send("Missing request body");
+  }
+
+  // Check for duplicate customer by ID
+  const [existing, findErr] = await da.getCustomerById(newCustomer.id);
+  if (existing) {
+    return res.status(409).send({
+      error: `Customer with id ${newCustomer.id} already exists.`
+    });
   }
 
   const [status, id, err] = await da.addCustomer(newCustomer);
@@ -107,8 +113,7 @@ app.put("/customers/:id", async (req, res) => {
   const updatedCustomer = req.body;
 
   if (!updatedCustomer) {
-    res.status(400).send("Missing request body");
-    return;
+    return res.status(400).send("Missing request body");
   }
 
   // Remove _id if present to avoid MongoDB write errors
@@ -134,7 +139,6 @@ app.delete("/customers/:id", async (req, res) => {
     res.status(404).send({ error: err });
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
